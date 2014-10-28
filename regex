@@ -1,0 +1,26 @@
+#get post title
+reg = r'<span id="thread_subject">[\s\S]+?</span>'
+
+#get post view[0] reply[1]
+reg = r'<span class="xi1">[\s\S]+?</span>'
+
+#get post id date
+reg = r'<em id="authorposton[\s\S]+?</em>'
+
+#get author id name
+reg = r'<div class="authi">[\s\S]+?</div>'
+
+#get author time
+reg = r'<dd style="color:#F00">[\s\S]+?</dd>'
+
+#get author time[5] joindate[6] value[12] reputation[13] money[14]
+reg = r'<li><em>[\s\S]+?</li>'
+
+#get author rank
+reg = r'gid=[\s\S]+?"'
+
+#get author post_num
+reg = r'type=reply[\s\S]+?</a>'
+
+#get author topic_num
+reg = r'type=thread[\s\S]+?</a>'
