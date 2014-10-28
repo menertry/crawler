@@ -19,6 +19,14 @@ if len(string)<=36
 string_link = string[1:-1]
 string_id = [28:-1]
 
+#get author name
+reg = r'spacename"[\s\S]+?</strong>'
+string_name = string[25:-24]
+
+#get author id
+reg = r'UID[\s\S]+?</span>'
+string_id = string[5:-8]
+
 #get author time
 reg = r'<dd style="color:#F00">[\s\S]+?</dd>'
 string = string[23:-5]
