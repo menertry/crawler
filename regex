@@ -1,11 +1,15 @@
 #get post title
 reg = r'<span id="thread_subject">[\s\S]+?</span>'
+string = string[26:-7]
 
 #get post view[0] reply[1]
 reg = r'<span class="xi1">[\s\S]+?</span>'
+string = string[24:-13]
 
 #get post id date
 reg = r'<em id="authorposton[\s\S]+?</em>'
+string_id = string[20:-35]
+string_date = string[-23:-5]
 
 #get author id name
 reg = r'<div class="authi">[\s\S]+?</div>'
