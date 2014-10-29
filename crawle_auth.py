@@ -53,7 +53,7 @@ def get_topic_num(html)
     return topic_num
 
 def get_auth(url, id, floor, date,  content)
-    html = urllib2.urlopen(url)
+    html = urllib2.urlopen(url).read()
     html_utf8 = html.decode('gbk').encode('utf8')
 
     auth_id = get_id(html_utf8)

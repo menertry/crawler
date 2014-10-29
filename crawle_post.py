@@ -34,7 +34,7 @@ def get_auth_links
 
 
 def get_post(url)
-    html = urllib2.urlopen(url)
+    html = urllib2.urlopen(url).read()
     html_utf8 = html.decode('gbk').encode('utf8')
 
     title = get_title(html_utf8)
