@@ -2,6 +2,49 @@ import urllib
 import urllib2
 import re
 
+def get_auth_id(html)
+    reg = r'avtm[\s\S]+?/'
+    imgre = re.compile(reg)
+    imglist = re.findall(imgre, html)
+    imglist.pop(-1)
+    counter = 0
+    for auth_id in imglist
+        imglist[counter] = auth_id[81:-5]
+        counter += 1
+    return imglist
+
+def get_auth_name(html)
+    reg = r'"xw1[\s\S]+?</a>'
+    imgre = re.compile(reg)
+    imglist = re.findall(imgre, html)
+    counter = 0
+    for name in imglist
+        imglist[counter] = name[name.find('>')+1:-4]
+        counter += 1
+    return imglist
+
+def get_auth_time(html)
+    reg = r'color:#F00[\s\S]+?</dd>'
+    imgre = re.compile(reg)
+    imglist = re.findall(imgre, html)
+    counter = 0
+    for time in imglist
+        imglist[counter] = time[12:-5]
+        counter += 1
+    return imglist
+
+def get_auth_value(html)
+    reg = r'do=profile" target="_blank" class="xi2"[\s\S]+?</a>' 
+    imgre = re.compile(reg)
+    imglist = re.findall(imgre, html)
+    counter = 0
+    value_list = []
+    for value in imglist
+        if counter%2  == 1:
+            value_list.append(imglist[counter][40:-4])
+        counter += 1
+    return value_list_
+
 def get_title(html)
     reg = r'<span id="thread_subject">[\s\S]+?</span>'
     imgre = re.compile(reg)
@@ -45,6 +88,20 @@ def get_date(html)
         counter += 1
     return imglist
 
+def get_post_num(html)
+    
+
+def get_level(html)
+    level = []
+    string = html
+    while string.find('Rank') != -1:
+        index = string.find('Rank')
+        string = string[index+6:]
+        if index > 1000:
+            level.append(string[0:string.find('"')])
+    return level
+    
+
 def get_view_reply(html)
     reg = r'<span class="xi1">[\s\S]+?</span>'
     imgre = re.compile(reg)
@@ -65,6 +122,15 @@ def get_auth_url
         imglist[counter] = "http://bbs.hackbase.com/home.php?mod=space&uid="+uid+"&do=profile"
         counter += 1
     return imglist
+
+def if_end(html)
+    if current_page(html) != total_page(html)
+        return 1
+    else
+        return 0
+
+def current_page(html)
+    
 
 def get_post(url, cursor)
     html = urllib2.urlopen(url).read()
