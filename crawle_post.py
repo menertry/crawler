@@ -1,6 +1,7 @@
 import urllib
 import urllib2
 import re
+import get_auth
 
 def get_auth_id(html)
     reg = r'avtm[\s\S]+?/'
@@ -43,7 +44,7 @@ def get_auth_value(html)
         if counter%2  == 1:
             value_list.append(imglist[counter][40:-4])
         counter += 1
-    return value_list_
+    return value_list
 
 def get_title(html)
     reg = r'<span id="thread_subject">[\s\S]+?</span>'
@@ -88,8 +89,19 @@ def get_date(html)
         counter += 1
     return imglist
 
-def get_post_num(html)
-    
+def get_post_topic(html)
+    reg = r'from=space[\s\S]+?</a>'
+    imgre = re.compile(reg)
+    imglist = re.findall(imgre, html)
+    post_num = topic_num =[]
+    counter = 0
+    for string in imglist
+        if counter%2 == 0:
+            post_num.append(imglist[counter][24:-4])
+        else:
+            topic_num.append(imglist[counter][24:-4])
+        counter += 1
+    return [post_num, topic_num]
 
 def get_level(html)
     level = []
@@ -130,29 +142,42 @@ def if_end(html)
         return 0
 
 def current_page(html)
-    
+    reg = r'class="pg"[\s\S]+?</strong>'
+    imgre = re.compile(reg)
+    imglist = re.findall(imgre, html)
+    return string.atoi(imglist[0][19:-9])
 
-def get_post(url, cursor)
-    html = urllib2.urlopen(url).read()
-    html_utf8 = html.decode('gbk').encode('utf8')
+def total_page(html)
+    reg = r'title="共[\s\S]+?"'
+    imgre = re.compile(reg)
+    imglist = re.findall(imgre, html)
+    return string.atoi(imglist[0][11:-5])
 
-    title = get_title(html_utf8)
-    content =get_content(html_utf8)
-    post_id = get_post_id(html_utf8)
-    vw_rp = get_view_reply(html_utf8)
-    date = get_date(html_utf8)
 
-    url_list = get_auth_url(html_utf8)
+def  get_post(url, cursor)
+    html = urllib2.urlopen(url).read().decode('gbk').encode('utf8')
+
+    post_id = get_post_id(html)
+    post_title = get_title(html)
+    content =get_content(html)
+    vw_rp = get_view_reply(html)
+    date = get_date(html)
+    auth_id = get_auth_id(html)
+    auth_name = get_auth_name(html)
+    auth_time = get_auth_time(html)
+    auth_value = get_auth_value(html)
+
+    url_list = get_auth_url(html)
 
     auth_list = get_auth(url_list[0])
-    sql = "".join("insert into main_post(post_id,post_title,post_view,post_reply,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values(",post_id,title,vw_rp[0],vw_rp[1],date[0],content[0],auth_list[0],auth_list[1],auth_list[2],auth_list[3],auth_list[4],auth_list[5],auth_list[6],auth_list[7],auth_list[8],auth_list[9]");")
+    sql = "".join("insert into main_post(post_id,post_title,post_view,post_reply,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values(",post_id,',"',post_title,'",',vw_rp[0],',',vw_rp[1],',"'date[0],'","',content[0],'",',auth_id[0],',"',auth_name[0],'","',auth_time[0],'","',auth_list[0],'",',auth_value[0],',',auth_list[1],',',auth_list[2],',',auth_level[0],',',post_num,',',topic_num,");")
     cursor.execute(sql)
     
     auth_list.pop(0)
     floor = 2
     for auth_url in url_list
         auth_list = get_auth(auth_url)
-        sql = "".join("insert into post_detail(post_id,post_floor,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values(",post_id,string.itoa(floor),date[floor-1],content[floor-1],auth_list[0],auth_list[1],auth_list[2],auth_list[3],auth_list[4],auth_list[5],auth_list[6],auth_list[7],auth_list[8],auth_list[9]");"
+        sql = "".join("insert into post_detail(post_id,post_floor,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values(",post_id,',',string.itoa(floor),',"'date[floor-1],'","',content[floor-1],'",',auth_id[floor-1],',"',auth_name[floor-1],'","',auth_list[0],'",',auth_value[floor-1],',',auth_list[1],',',auth_list[2],',',auth_level[floor-1],post,auth_list[8],auth_list[9]");"
         cursor.execute(sql)
         floor += 1
     return if_end(html_utf8)
