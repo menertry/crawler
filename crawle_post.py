@@ -4,6 +4,9 @@ import urllib2
 import re
 import crawle_auth
 import crawler
+import chardet
+
+counter = 0
 
 def get_auth_id(html):
     reg = r'authi"><[\s\S]+?target'
@@ -55,7 +58,7 @@ def get_title(html):
     return str_title
 
 def get_content(html):
-    reg = r'<table cellspacing="0" cellpadding="0"><tr>[\s\S]+?</td>'
+    reg = r'<div class="pcb">[\s\S]+?</table>'
     imgre = re.compile(reg)
     imglist = re.findall(imgre, html)
     counter = 0
@@ -108,9 +111,9 @@ def get_post_topic(html):
     counter = 0
     for string in imglist:
         if counter%2 == 0:
-            topic_num.append(imglist[counter][24:-4])
+            topic_num.append(lable_cut(imglist[counter][24:-4]))
         elif counter%2 == 1:
-            post_num.append(imglist[counter][24:-4])
+            post_num.append(lable_cut(imglist[counter][24:-4]))
         counter += 1
     return [post_num, topic_num]
 
@@ -180,7 +183,13 @@ def total_page(html):
 
 
 def  get_post(url):
-    html = urllib2.urlopen(url).read().decode('gbk').encode('utf8')
+    html = urllib2.urlopen(url).read()
+    encode_dict = chardet.detect(html)
+    if encode_dict['encoding'] == 'UFT-8' or encode_dict['encoding'] == 'utf-8':
+        html = html
+    else:
+        html = html.decode('gbk','ignore').encode('utf8')
+        
 
     post_id = get_post_id(html)
     post_title = get_title(html)
@@ -197,26 +206,31 @@ def  get_post(url):
 
     url_list = get_auth_url(html, auth_id)
 
-    auth_list = crawle_auth.get_auth(url_list[0])
-    sql = 'insert into main_post(post_id,post_title,post_view,post_reply,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values('+post_id+',"'+post_title+'",'+vw_rp[0]+','+vw_rp[1]+',"'+date[0]+'","'+content[0]+'",'+auth_id[0]+',"'+auth_name[0]+'","'+auth_time[0]+'","'+auth_list[0]+'",'+auth_value[0]+','+auth_list[1]+','+auth_list[2]+','+auth_level[0]+','+post_topic[0][0]+','+post_topic[1][0]+');'
-    print sql
-    crawler.insert(sql)
-    
-    crawler.post_counter += 1
-    print crawler.post_counter
- 
-    url_list.pop(0)
-    counter = 1
-    for auth_url in url_list:
-        auth_list = crawle_auth.get_auth(auth_url)
-        if floor[counter][-1] == '@':
-            sql = 'insert into another_post_detail(post_id,post_floor,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values('+post_id+','+str(counter)+',"'+date[counter]+'","'+content[counter]+'",'+auth_id[counter]+',"'+auth_name[counter]+'","'+auth_time[counter]+'","'+auth_list[0]+'",'+auth_value[counter]+','+auth_list[1]+','+auth_list[2]+','+auth_level[counter]+','+post_topic[0][counter]+','+post_topic[1][counter]+');'
-        else:
-            sql = 'insert into post_detail(post_id,post_floor,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values('+post_id+','+floor[counter]+',"'+date[counter]+'","'+content[counter]+'",'+auth_id[counter]+',"'+auth_name[counter]+'","'+auth_time[counter]+'","'+auth_list[0]+'",'+auth_value[counter]+','+auth_list[1]+','+auth_list[2]+','+auth_level[counter]+','+post_topic[0][counter]+','+post_topic[1][counter]+');'
+    tem_counter = 0
+    if self.counter == tem_counter:
+        auth_list = crawle_auth.get_auth(url_list[0])
+        sql = 'insert into main_post(post_id,post_title,post_view,post_reply,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values('+post_id+',"'+post_title+'","'+vw_rp[0]+'","'+vw_rp[1]+'","'+date[0]+'","'+content[0]+'",'+auth_id[0]+',"'+auth_name[0]+'","'+auth_time[0]+'","'+auth_list[0]+'","'+auth_value[0]+'","'+auth_list[1]+'","'+auth_list[2]+'","'+auth_level[0]+'","'+post_topic[0][0]+'","'+post_topic[1][0]+'");'
         print sql
         crawler.insert(sql)
-
-        counter += 1
-        crawler.post_counter += 1
+    
+        self.post_counter += 1
         print crawler.post_counter
+ 
+    url_list.pop(0)
+    tem_counter += 1
+    for auth_url in url_list:
+        if tem_counter == crawle_post.counter:
+            auth_list = crawle_auth.get_auth(auth_url)
+            if floor[counter][-1] == '@':
+                sql = 'insert into another_post_detail(post_id,post_floor,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values('+post_id+',"'+str(counter)+'","'+date[counter]+'","'+content[counter]+'",'+auth_id[counter]+',"'+auth_name[counter]+'","'+auth_time[counter]+'","'+auth_list[0]+'","'+auth_value[counter]+'","'+auth_list[1]+'","'+auth_list[2]+'","'+auth_level[counter]+'","'+post_topic[0][counter]+'","'+post_topic[1][counter]+'");'
+            else:
+                sql = 'insert into post_detail(post_id,post_floor,post_date,post_content,auth_id,auth_name,auth_time,auth_join_date,auth_value,auth_reputation,auth_money,auth_level,auth_post_num,auth_topic_num)values('+post_id+',"'+floor[counter]+'","'+date[counter]+'","'+content[counter]+'",'+auth_id[counter]+',"'+auth_name[counter]+'","'+auth_time[counter]+'","'+auth_list[0]+'","'+auth_value[counter]+'","'+auth_list[1]+'","'+auth_list[2]+'","'+auth_level[counter]+'","'+post_topic[0][counter]+'","'+post_topic[1][counter]+'");'
+            print sql
+            crawler.insert(sql)
+            crawle_post.counter += 1
+
+        tem_counter += 1
+        self.post_counter += 1
+        print crawler.post_counter
+    self.post_counter = 0
     return if_end(html)

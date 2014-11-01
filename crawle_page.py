@@ -4,6 +4,9 @@ import urllib2
 import re
 import crawler
 import crawle_post
+import chardet
+
+counter = 0
 
 def get_url(html):
     reg = r'previewThread[\s\S]+?onclick'
@@ -42,8 +45,19 @@ def total_page(html):
     return total_page
     
 def get_page(url):
-    html = urllib2.urlopen(url).read().decode('gbk').encode('utf8')
+    html = urllib2.urlopen(url).read()
+    encode_dict = chardet.detect(html)
+    if encode_dict['encoding'] == 'UFT-8' or encode_dict['encoding'] == 'utf-8':
+        html = html
+    else:
+        html = html.decode('gbk','ignore').encode('utf8')
+
     url_list = get_url(html)
+    tem_counter = 0
     for url in url_list:
-        crawle_post.get_post(url)
+        if tem_counter == crawle_post.counter:
+            crawle_post.get_post(url)
+            self.counter += 1
+        tem_counter += 1
+    self.counter = 0
     return if_end(html)
