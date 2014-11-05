@@ -1,7 +1,7 @@
 #encoding=utf-8
 import crawler
 
-def jdt_rp_my(auth_id):
+def get_jdt_rp_my(auth_id):
     url = 'http://bbs.hackbase.com/home.php?mod=space&uid='+str(auth_id)+'&do=profile'
     html = crawler.urlopen(url)
     join_date = get_join_date(html)

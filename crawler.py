@@ -1,18 +1,55 @@
+#encoding=utf-8
 import urllib
 import urllib2
 import re
 import chardet
-
+import login
+from post import Post
+from tid_getter import Tid_getter
+import threading
+import MySQLdb
+import pdb
+    
 post = 0
 floor = 0
+auth_set = {}
+
+def post_finish():
+    global post
+    post += 1
+    print 'finish '+str(post)+' post, '+str(floor)+' floor'
+
+def floor_finish():
+    global floor
+    floor += 1
+    print 'finish '+str(post)+' post, '+str(floor)+' floor'
+    
+def insert(sql):
+    db = MySQLdb.connect("localhost","root","","mysql",charset="utf8")
+    cursor = db.cursor()
+    try:
+        cursor.execute(sql)
+    except:
+#        print sql
+        pass
+    finally:
+        db.commit()
+        db.close()
+
+def replace(string, be_replaced, replace):
+    index = string.find(be_replaced)
+    while index != -1:
+        string = string[0:index] + replace + string[index+len(be_replaced):]
+        index = string.find(be_replaced)
+    return string
 
 def get_a_post():
     return urlopen('http://bbs.hackbase.com/forum.php?mod=viewthread&tid=2831312&extra=page%3D2')
-
+    
 def regex(reg, html):
     imgre = re.compile(reg)
     return re.findall(imgre, html)
-
+    
 def lable_cut(string):
     reg = r'<[\s\S]+?>'
     imgre = re.compile(reg)
@@ -23,6 +60,7 @@ def lable_cut(string):
     return string
 
 def urlopen(url):
+    try:
         html = urllib2.urlopen(url).read()
         encode_dict = chardet.detect(html)
         if encode_dict['encoding'] == 'UFT-8' or encode_dict['encoding'] == 'utf-8':
@@ -32,41 +70,26 @@ def urlopen(url):
         return html
     except:
         return urlopen(url)
-
-def get_loginhash(html):
-    reg = r'loginhash[\s\S]+?"'
-    imgre = re.compile(reg)
-    imglist = re.findall(imgre, html)
-    loginhash = imglist[0][10:-1]
-    return loginhash
-
-def get_formhash(html):
-    reg = r'formhash[\s\S]+?/'
-    imgre = re.compile(reg)
-    imglist = re.findall(imgre, html)
-    formhash = imglist[0][17:-3]
-    return formhash
-
-def get_seccode(html):
-    reg = r'seccode[\s\S]+?"'
-    imgre = re.compile(reg)
-    imglist = re.findall(imgre, html)
-    seccode = imglist[8:-1]
-    return seccode
-
-def login():
-    try:
-        loginurl = 'http://bbs.hackbase.com/member.php?mod=logging&action=login'
-        cj = cookielib.CookieJar()
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-        urllib2.install_opener(opener)
-        html = urllib2.urlopen(loginurl).read()
-        posturl = 'http://bbs.hackbase.com/member.php?mod=logging&action=login&loginsubmit=yes&loginhash='+get_loginhash(html)+'&inajax=1'
-        data ={'formhash':get_formhash(html),'referer':'http://bbs.hackbase.com/forum.php','username':'menertry','password':'8e4ca7af923595919610e17f0dde5140','questionid':'0','answer':'','seccodehash':get_seccode(html),'seccodemodid':'member::logging','seccodeverify':''}
-        post_data = urllib.urlencode(data)
-        req = urllib2.Request(posturl,post_data)
-        urllib2.urlopen(req)
-    except:
-        login()
-    else:
-        print LOGIN SUCESS!
+   
+def get_start():
+    url = 'http://bbs.hackbase.com/forum.php?mod=forumdisplay&fid=378'
+    total_thread = 25
+    login.login()
+    thread_list = []
+    queue = []
+    tid_getter = Tid_getter(url)
+    post_getter = []
+    i = 0
+    print 'Begin multithread'
+    while i < total_thread:
+        post_getter.append(Post(tid_getter.tid_list))
+        thread_list.append(threading.Thread(target = post_getter[i].crawle))
+        thread_list[i].start()
+        i += 1
+    print 'Begin get tid'
+    tid_getter.crawle()
+    
+    i = 0
+    while i<total_thread:
+        thread_list[i].join()
+        i += 1

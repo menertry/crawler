@@ -1,53 +1,52 @@
 #encoding=utf-8
-import cwl_lib
+import crawler
+import time
+import floor
+import threading
 
-class post(object):
+class Post(object):
     def __init__(self, tid_list):
+        self.lock = threading.Lock()
         self.tid_list = tid_list
         self.page = 1
         self.total_page = 1
         self.tid = 0
     def get(self):
-        try:
-            if self.tid == 0:
-                tid = self.tid_list.pop(0)
-            while self.page <= self.total_page:
-                html = cwl_lib.urlopen('http://bbs.hackbase.com/forum.php?mod=viewthread&tid='+str(tid)+'&extra=page='+str(self.page))
-                self.total_page = self.total_page(html)
-                html = html[index : html.find('查看:')]
+        if self.tid == 0:
+            self.lock.acquire()
+            self.tid = self.tid_list.pop(0)
+            self.lock.release()
+        #self.tid = 3600061
+        while self.page <= self.total_page:
+            html = crawler.urlopen('http://bbs.hackbase.com/forum.php?mod=viewthread&tid='+str(self.tid)+'&page='+str(self.page))
+            self.total_page = self.get_total_page(html)
+            html = html[html.find('查看:'):]
+            index = html.find('使用道具')
+            while index != -1:
+                floor.crawle(html[0:index], self.tid, self.lock)
+                html = html[index+12:]
                 index = html.find('使用道具')
-                while index != -1:
-                    floor.get(html[0:index], self.tid)
-                    html = html[index+12:]
-                    index = html.find('使用道具')
-                self.page += 1
-            cwl_lib.post_finish()
-            self.page = 1
-            self.total_page = 1
-            self.tid = 0
-        except:
-            pass
+            self.page += 1
+        self.lock.acquire()
+        crawler.post_finish()
+        self.lock.release()
+        self.page = 1
+        self.total_page = 1
+        self.tid = 0
 
     def crawle(self):
-        while 1:
+        time.sleep(60)
+        while len(self.tid_list) != 0 or self.tid != 0:
             self.get()
 
-
-
-def get_content(html):
-    reg = r'<div class="pcb">[\s\S]+?</table>'
-    content = cwl_lib.regex(reg, html)
-    counter = 0
-    for str_content in content:
-        content[counter] = content_cut(str_content[:-8])
-        counter += 1
-    return imglist
-
-def content_cut(string):
-    index = string.find('</div>')
-    if index != -1:
-        string = string[index+6:]
-    string = cwl_lib.lable_cut(string)
-    string = cwl_lib.replace(string, '&nbsp;','')
-    return string
-
+    def get_total_page(self, html):
+        html_tem = html
+        index = html_tem.find('title="共')
+        if index == -1:
+            return 1
+        else:
+            html_tem = html_tem[index:]
+            html_tem = html_tem[0:html_tem.find('页')]
+            html_tem = html_tem[10:]
+            total_page = int(html_tem)
+        return total_page  
