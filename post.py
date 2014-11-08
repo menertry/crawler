@@ -19,10 +19,14 @@ class Post(object):
         #self.tid = 3600061
         while self.page <= self.total_page:
             html = crawler.urlopen('http://bbs.hackbase.com/forum.php?mod=viewthread&tid='+str(self.tid)+'&page='+str(self.page))
+            index = html.find('没有找到帖子')
+            if index != -1:
+                self.tid = 0
+                return
             self.total_page = self.get_total_page(html)
             index = html.find('发表帖子')
             if index == -1:
-                return -1
+                pass
             else:
                 html = html[index:]
             index = html.find('使用道具')
