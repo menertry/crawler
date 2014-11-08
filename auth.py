@@ -3,7 +3,10 @@ import crawler
 
 def get_jdt_rp_my(auth_id):
     url = 'http://bbs.hackbase.com/home.php?mod=space&uid='+str(auth_id)+'&do=profile'
-    html = crawler.urlopen(url)
+    index = -1
+    while index == -1:
+        html = crawler.urlopen(url)
+        index = html.find('空间首页')
     join_date = get_join_date(html)
     reputation = get_reputation(html)
     money = get_money(html)

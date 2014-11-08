@@ -29,9 +29,9 @@ def insert(sql):
     cursor = db.cursor()
     try:
         cursor.execute(sql)
-    except:
-#        print sql
-        pass
+    except Exception as e:
+        print sql
+        print e
     finally:
         db.commit()
         db.close()
@@ -58,8 +58,13 @@ def lable_cut(string):
         index = string.find(cut)
         string = string[0:index]+string[index+len(cut):]
     return string
-
 def urlopen(url):
+    sign = -1
+    while sign == -1:
+        sign = urlopen_true(url)
+    return sign
+
+def urlopen_true(url):
     try:
         html = urllib2.urlopen(url).read()
         encode_dict = chardet.detect(html)
@@ -69,10 +74,11 @@ def urlopen(url):
             html = html.decode('gbk','ignore').encode('utf8')
         return html
     except:
-        return urlopen(url)
+        return -1
    
 def get_start():
-    url = 'http://bbs.hackbase.com/forum.php?mod=forumdisplay&fid=378'
+    url = 'http://bbs.hackbase.com/forum.php?mod=forumdisplay&fid=397'#firewall
+#    url = 'http://bbs.hackbase.com/forum.php?mod=forumdisplay&fid=378'#soft
     total_thread = 25
     login.login()
     thread_list = []

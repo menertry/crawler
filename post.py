@@ -20,7 +20,11 @@ class Post(object):
         while self.page <= self.total_page:
             html = crawler.urlopen('http://bbs.hackbase.com/forum.php?mod=viewthread&tid='+str(self.tid)+'&page='+str(self.page))
             self.total_page = self.get_total_page(html)
-            html = html[html.find('查看:'):]
+            index = html.find('发表帖子')
+            if index == -1:
+                return -1
+            else:
+                html = html[index:]
             index = html.find('使用道具')
             while index != -1:
                 floor.crawle(html[0:index], self.tid, self.lock)
@@ -38,6 +42,7 @@ class Post(object):
         time.sleep(60)
         while len(self.tid_list) != 0 or self.tid != 0:
             self.get()
+        print 'END'
 
     def get_total_page(self, html):
         html_tem = html

@@ -91,6 +91,7 @@ def get_title(html):
 
 def get_view(html):
     html_tem = html
+    html_tem = html_tem[html_tem.find('查看:'):]
     html_tem = html_tem[html_tem.find('&nbsp;')+6:]
     html_tem = html_tem[0:html_tem.find('&nbsp;')]
     return html_tem
@@ -121,7 +122,13 @@ def get_date(html):
     html_tem = html_tem[html_tem.find('发表于'):]
     html_tem = html_tem[0:html_tem.find('</em>')]
     html_tem = html_tem[10:]
-    return html_tem
+    index = html_tem.find('title="')
+    if index == -1:
+        return html_tem
+    else:
+        html_tem = html_tem[index+7:]
+        html_tem = html_tem[0:html_tem.find('"')]
+        return html_tem
 
 def get_time(html):
     html_tem = html
