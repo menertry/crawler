@@ -25,7 +25,7 @@ def floor_finish():
     print 'finish '+str(post)+' post, '+str(floor)+' floor'
     
 def insert(sql):
-    db = MySQLdb.connect("localhost","root","","mysql",charset="utf8")
+    db = MySQLdb.connect("localhost","root","","software",charset="utf8")
     cursor = db.cursor()
     try:
         cursor.execute(sql)
